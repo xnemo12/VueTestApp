@@ -25,10 +25,10 @@
               <button class="button is-success" @click="addDocumentForm">Добавить</button>
             </div>
             <div class="control">
-              <!--<button class="button is-danger"-->
-                      <!--@click="deleteSelection"-->
-                      <!--:disabled="!checkedRowsCount > 0">Удалить-->
-              <!--</button>-->
+              <button class="button is-danger"
+                      @click="deleteSelection"
+                      :disabled="!checkedItems.length > 0">Удалить
+              </button>
             </div>
           </div>
         </div>
@@ -39,31 +39,35 @@
         :loading="loading"
         :total="total"
         :per-page="perPage"
+        :checked-rows.sync="checkedItems"
         mobile-cards
         hoverable
         default-sort="name"
         paginated
         backend-pagination
         checkable
-        @page-change="onPageChange">
+        @page-change="onPageChange"
+        backend-sorting
+        :default-sort-direction="sort"
+        @sort="onSort">
 
         <template slot-scope="props">
           <b-table-column field="first_name" label="Название" sortable >
             {{ props.row.name }}
           </b-table-column>
 
-          <b-table-column field="date" label="Дата создания" sortable centered>
+          <b-table-column field="date" label="Дата создания" centered>
                     <span class="tag is-success">
                         {{ new Date(props.row.created).toLocaleDateString() }}
                     </span>
           </b-table-column>
 
           <b-table-column label="Actions" numeric>
-            <button class="button is-light" @click="editDocumentForm(props.row.id)">
+            <button class="button is-light is-small" @click="editDocumentForm(props.row.id)">
               <b-icon icon="square-edit-outline"></b-icon>
               <span>Ред.</span>
             </button>
-            <button class="button is-light" @click="showDocumentForm(props.row.id)">
+            <button class="button is-light is-small" @click="showDocumentForm(props.row.id)">
               <b-icon icon="eye"></b-icon>
               <span>Просм.</span>
             </button>
@@ -94,10 +98,12 @@ export default {
   data () {
     return {
       data: [],
+      checkedItems: [],
       total: 0,
       loading: false,
       page: 1,
-      perPage: 7,
+      perPage: 8,
+      sortOrder: 'asc',
       q: ''
     }
   },
@@ -107,11 +113,13 @@ export default {
       documentResource.getDocuments({
         page: this.page,
         perPage: this.perPage,
+        sort: this.sortOrder,
         q: this.q
       }).then((response) => {
         this.loading = false
         this.total = response.body.count
         this.data = response.body.data
+        this.checkedItems = []
       }).catch((error) => {
         console.log(error)
       })
@@ -119,6 +127,11 @@ export default {
 
     onPageChange (page) {
       this.page = page
+      this.loadData()
+    },
+
+    onSort (field, order) {
+      this.sortOrder = order
       this.loadData()
     },
 
@@ -139,7 +152,28 @@ export default {
     },
 
     deleteSelection () {
-      alert('DELETE')
+      this.$dialog.confirm({
+        message: `Вы действительно хотите удалить? Действие невозможно будет отменить, вы уверены?`,
+        cancelText: 'Отменить',
+        onConfirm: () => {
+          let documentIds = []
+          this.checkedItems.forEach((value, index, array) => {
+            documentIds.push(value.id)
+          })
+
+          documentResource.bulkDelete({
+            documents: documentIds
+          }).then((response) => {
+            this.$toast.open({
+              message: 'Удалено ' + response.body.count + ' строки',
+              type: 'is-info'
+            })
+            this.loadData()
+          }).catch((error) => {
+            console.log(error)
+          })
+        }
+      })
     }
   },
   mounted () {

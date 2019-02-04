@@ -20,6 +20,10 @@ const documentResource = Resource('', {}, {
   deleteDocument: {
     method: 'DELETE',
     url: 'document/{id}'
+  },
+  bulkDelete: {
+    method: 'DELETE',
+    url: 'documents'
   }
 })
 

@@ -63,17 +63,24 @@ export default {
       })
     },
     deleteFile (f, id) {
-      attachmentResource.delete({id}).then(() => {
-        this.$toast.open({
-          message: 'Файл удален',
-          type: 'is-warning'
-        })
-        this.files.splice(this.files.indexOf(f), 1)
-      }).catch(() => {
-        this.$toast.open({
-          message: 'Файл не найден на сервере',
-          type: 'is-danger'
-        })
+
+      this.$dialog.confirm({
+        message: `Вы действительно хотите удалить? Действие невозможно будет отменить, вы уверены?`,
+        cancelText: 'Отменить',
+        onConfirm: () => {
+          attachmentResource.delete({id}).then(() => {
+            this.$toast.open({
+              message: 'Файл удален',
+              type: 'is-warning'
+            })
+            this.files.splice(this.files.indexOf(f), 1)
+          }).catch(() => {
+            this.$toast.open({
+              message: 'Файл не найден на сервере',
+              type: 'is-danger'
+            })
+          })
+        }
       })
     },
     download (id, name) {
