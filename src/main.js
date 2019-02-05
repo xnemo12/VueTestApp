@@ -17,7 +17,7 @@ Vue.config.productionTip = false
 Vue.use(Buefy)
 Vue.use(VueResource)
 
-Vue.http.options.root = `http://localhost:8000/api/`
+Vue.http.options.root = `http://api.muxtarovich.ru/api/`
 Vue.http.interceptors.push((request, next) => {
   NProgress.start()
   next(() => {

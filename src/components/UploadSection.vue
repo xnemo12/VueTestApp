@@ -63,7 +63,6 @@ export default {
       })
     },
     deleteFile (f, id) {
-
       this.$dialog.confirm({
         message: `Вы действительно хотите удалить? Действие невозможно будет отменить, вы уверены?`,
         cancelText: 'Отменить',
